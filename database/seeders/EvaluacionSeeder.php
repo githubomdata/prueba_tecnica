@@ -20,7 +20,7 @@ class EvaluacionSeeder extends Seeder
 
         User::query()->updateOrCreate(
             ['email' => 'lector@mesa.test'],
-            ['name' => 'Leonardo Lector', 'password' => Hash::make('Evaluacion2026!'), 'puede_editar' => false],
+            ['name' => 'Leonardo Lector', 'password' => Hash::make('Evaluacion2026!'), 'puede_editar' => true],
         );
 
         $personas = collect(['Ana Torres', 'Bruno Díaz', 'Carolina Méndez'])
