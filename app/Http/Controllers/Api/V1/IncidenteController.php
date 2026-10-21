@@ -13,6 +13,7 @@ use Illuminate\Support\Facades\Gate;
 
 class IncidenteController extends Controller
 {
+    // TODO (Fase 2, requerimiento 1): Integrar ListarIncidentesRequest y completar el filtro por prioridad.
     public function index(): AnonymousResourceCollection
     {
         Gate::authorize('viewAny', Incidente::class);
@@ -45,4 +46,7 @@ class IncidenteController extends Controller
 
         return new IncidenteResource($guardado->refresh()->load('responsable'));
     }
+
+    // TODO (Fase 2, requerimiento 2): Añadir el método para actualizar exclusivamente la prioridad,
+    // utilizando ActualizarPrioridadIncidenteRequest y el recurso JSON existente.
 }

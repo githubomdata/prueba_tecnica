@@ -15,5 +15,8 @@ Route::prefix('v1')->name('api.v1.')->group(function () {
             ->whereNumber('incidente')->name('incidentes.show');
         Route::patch('incidentes/{incidente}', [IncidenteController::class, 'update'])
             ->whereNumber('incidente')->name('incidentes.update');
+
+        // TODO (Fase 2, requerimiento 2): Registrar aquí PATCH incidentes/{incidente}/prioridad
+        // y vincularla al método correspondiente de IncidenteController.
     });
 });

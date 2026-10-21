@@ -103,11 +103,19 @@ En esta fase, ambos perfiles pueden consultar; solo el editor puede crear y actu
 | `app/Http/Controllers/Api/V1/IncidenteController.php` | Operaciones base de incidentes |
 | `app/Http/Requests/Api/LoginRequest.php` | Validación del login |
 | `app/Http/Requests/Api/GuardarIncidenteRequest.php` | Autorización y validación de escritura de la API |
+| `app/Http/Requests/Api/ListarIncidentesRequest.php` | Plantilla pendiente para la autorización y validación del filtro por prioridad |
+| `app/Http/Requests/Api/ActualizarPrioridadIncidenteRequest.php` | Plantilla pendiente para la autorización y validación de la actualización exclusiva de prioridad |
 | `app/Actions/GuardarIncidente.php` | Reglas compartidas y persistencia del flujo base |
 | `app/Models/Incidente.php` | Modelo y relación con la persona responsable |
 | `app/Enums/PrioridadIncidente.php` | Valores y etiquetas de prioridad |
 | `app/Policies/IncidentePolicy.php` | Permisos aplicados en backend |
 | `app/Http/Resources/IncidenteResource.php` | Representación JSON de los incidentes |
+
+### Plantillas y puntos de trabajo
+
+Los archivos `ListarIncidentesRequest.php` y `ActualizarPrioridadIncidenteRequest.php` se entregan como plantillas para completar: `authorize()` devuelve `false` y `rules()` devuelve un arreglo vacío. Completa su autorización y sus reglas de validación e integra cada Request en la operación correspondiente del controlador. Las plantillas todavía no están conectadas a los endpoints suministrados.
+
+Los comentarios `TODO (Fase 2, requerimiento 1)` en `IncidenteController::index()` señalan dónde ampliar el listado. Los comentarios `TODO (Fase 2, requerimiento 2)` al final de ese controlador y dentro del grupo protegido de `routes/api.php` señalan dónde añadir el método y registrar la ruta específica de prioridad. Estos comentarios orientan la ubicación del trabajo; la implementación de ambos requerimientos corresponde al aspirante.
 
 ## Requerimiento 1 — Filtrar incidentes por prioridad
 
