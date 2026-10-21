@@ -12,7 +12,7 @@ use Illuminate\Validation\Rule;
 class GuardarIncidente
 {
     /**
-     * @param  array{titulo:mixed, descripcion:mixed, estado:mixed, responsable_id:mixed}  $datos
+     * @param  array{titulo?:mixed, descripcion?:mixed, estado?:mixed, responsable_id?:mixed}  $datos
      */
     public function ejecutar(User $usuario, array $datos, ?Incidente $incidente = null): Incidente
     {
@@ -21,7 +21,22 @@ class GuardarIncidente
             $incidente ?? Incidente::class,
         );
 
-        $validados = Validator::make($datos, [
+        $validados = Validator::make(
+            $datos,
+            self::reglas(parcial: $incidente !== null),
+            self::mensajes(),
+        )->validate();
+
+        $incidente ??= new Incidente(['codigo' => $this->nuevoCodigo()]);
+        $incidente->fill($validados);
+        $incidente->save();
+
+        return $incidente;
+    }
+
+    public static function reglas(bool $parcial = false): array
+    {
+        $reglas = [
             'titulo' => ['required', 'string', 'max:180'],
             'descripcion' => ['required', 'string', 'min:10', 'max:5000'],
             'estado' => ['required', Rule::in(['abierto', 'en_proceso', 'resuelto'])],
@@ -30,15 +45,20 @@ class GuardarIncidente
                 'integer',
                 Rule::exists('personas', 'id')->where(fn ($query) => $query->where('activa', true)),
             ],
-        ], [
-            'responsable_id.exists' => 'El responsable seleccionado no existe o no está activo.',
-        ])->validate();
+        ];
 
-        $incidente ??= new Incidente(['codigo' => $this->nuevoCodigo()]);
-        $incidente->fill($validados);
-        $incidente->save();
+        if ($parcial) {
+            foreach ($reglas as &$regla) {
+                array_unshift($regla, 'sometimes');
+            }
+        }
 
-        return $incidente;
+        return $reglas;
+    }
+
+    public static function mensajes(): array
+    {
+        return ['responsable_id.exists' => 'El responsable seleccionado no existe o no está activo.'];
     }
 
     private function nuevoCodigo(): string
