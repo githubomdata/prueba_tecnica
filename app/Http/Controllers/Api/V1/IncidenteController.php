@@ -4,7 +4,9 @@ namespace App\Http\Controllers\Api\V1;
 
 use App\Actions\GuardarIncidente;
 use App\Http\Controllers\Controller;
+use App\Http\Requests\Api\ActualizarPrioridadIncidenteRequest;
 use App\Http\Requests\Api\GuardarIncidenteRequest;
+use App\Http\Requests\Api\ListarIncidentesRequest;
 use App\Http\Resources\IncidenteResource;
 use App\Models\Incidente;
 use Illuminate\Http\JsonResponse;
@@ -13,8 +15,8 @@ use Illuminate\Support\Facades\Gate;
 
 class IncidenteController extends Controller
 {
-    // TODO (Fase 2, requerimiento 1): Integrar ListarIncidentesRequest y completar el filtro por prioridad.
-    public function index(): AnonymousResourceCollection
+    // TODO (Fase 2, requerimiento 1): Completar el filtro por prioridad usando ListarIncidentesRequest.
+    public function index(ListarIncidentesRequest $request): AnonymousResourceCollection
     {
         Gate::authorize('viewAny', Incidente::class);
 
@@ -47,6 +49,10 @@ class IncidenteController extends Controller
         return new IncidenteResource($guardado->refresh()->load('responsable'));
     }
 
-    // TODO (Fase 2, requerimiento 2): Añadir el método para actualizar exclusivamente la prioridad,
-    // utilizando ActualizarPrioridadIncidenteRequest y el recurso JSON existente.
+    public function actualizarPrioridad(
+        ActualizarPrioridadIncidenteRequest $request,
+        Incidente $incidente,
+    ): IncidenteResource {
+        // TODO (Fase 2, requerimiento 2): Actualizar exclusivamente la prioridad y devolver el recurso JSON.
+    }
 }

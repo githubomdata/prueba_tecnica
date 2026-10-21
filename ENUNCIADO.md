@@ -49,7 +49,7 @@ Los entregables técnicos de la primera fase corresponden a esa fase. En esta se
 
 ## API y recursos suministrados
 
-Los siguientes seis endpoints ya son funcionales y no debes implementarlos:
+La API suministrada contiene los siguientes seis endpoints base. Sus operaciones ya están implementadas; el listado incorpora una plantilla Request pendiente de completar como parte del primer requerimiento:
 
 | Método | Endpoint | Funcionalidad disponible |
 |---|---|---|
@@ -113,9 +113,9 @@ En esta fase, ambos perfiles pueden consultar; solo el editor puede crear y actu
 
 ### Plantillas y puntos de trabajo
 
-Los archivos `ListarIncidentesRequest.php` y `ActualizarPrioridadIncidenteRequest.php` se entregan como plantillas para completar: `authorize()` devuelve `false` y `rules()` devuelve un arreglo vacío. Completa su autorización y sus reglas de validación e integra cada Request en la operación correspondiente del controlador. Las plantillas todavía no están conectadas a los endpoints suministrados.
+Los archivos `ListarIncidentesRequest.php` y `ActualizarPrioridadIncidenteRequest.php` se entregan como plantillas para completar: `authorize()` devuelve `false` y `rules()` devuelve un arreglo vacío. Ambos Request ya están declarados como parámetros en sus métodos del controlador. Completa su autorización y sus reglas de validación. El listado responderá 403 para usuarios autenticados hasta que completes la autorización de `ListarIncidentesRequest`.
 
-Los comentarios `TODO (Fase 2, requerimiento 1)` en `IncidenteController::index()` señalan dónde ampliar el listado. Los comentarios `TODO (Fase 2, requerimiento 2)` al final de ese controlador y dentro del grupo protegido de `routes/api.php` señalan dónde añadir el método y registrar la ruta específica de prioridad. Estos comentarios orientan la ubicación del trabajo; la implementación de ambos requerimientos corresponde al aspirante.
+Los comentarios `TODO (Fase 2, requerimiento 1)` en `IncidenteController::index()` señalan dónde ampliar el listado. El método `IncidenteController::actualizarPrioridad()` se entrega vacío, con `ActualizarPrioridadIncidenteRequest` y el incidente como parámetros. Los comentarios `TODO (Fase 2, requerimiento 2)` en ese método y dentro del grupo protegido de `routes/api.php` señalan dónde completar la actualización y registrar la ruta específica de prioridad. La implementación de ambos requerimientos corresponde al aspirante.
 
 ## Requerimiento 1 — Filtrar incidentes por prioridad
 
