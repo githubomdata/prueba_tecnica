@@ -41,7 +41,7 @@ Se permite documentación oficial local y autocompletado convencional. No se per
 
 ## Objetivo y tiempo
 
-Amplía la API REST de Mesa de Incidentes que ya está construida y funcionando. Esta fase comienza después de terminar la primera evaluación y de que el operador compruebe el entorno y los perfiles de acceso.
+Amplía la API REST base de Mesa de Incidentes que se entrega junto con las plantillas pendientes descritas en esta fase. Esta fase comienza después de terminar la primera evaluación y de que el operador compruebe el entorno y los perfiles de acceso.
 
 Dispones de **30 minutos**, destinados exclusivamente a los dos requerimientos siguientes. La primera fase conserva sus 35 minutos: ambas suman 65 minutos de desarrollo, sin incluir la preparación del entorno ni la explicación prevista al terminar la primera fase.
 
@@ -55,7 +55,7 @@ La API suministrada contiene los siguientes seis endpoints base. Sus operaciones
 |---|---|---|
 | POST | `/api/v1/login` | Autentica las credenciales y entrega un token Bearer |
 | POST | `/api/v1/logout` | Revoca el token utilizado en esa solicitud |
-| GET | `/api/v1/incidentes` | Lista incidentes, cinco por página |
+| GET | `/api/v1/incidentes` | Listado de cinco incidentes por página; autorización del Request pendiente |
 | GET | `/api/v1/incidentes/{id}` | Consulta el detalle de un incidente |
 | POST | `/api/v1/incidentes` | Crea un incidente con los campos del flujo base |
 | PATCH | `/api/v1/incidentes/{id}` | Actualiza parcialmente los campos del flujo base |
@@ -92,7 +92,7 @@ Authorization: Bearer {token}
 Accept: application/json
 ```
 
-En esta fase, ambos perfiles pueden consultar; solo el editor puede crear y actualizar. Si el entorno no cumple estas condiciones iniciales, informa al evaluador antes de comenzar.
+Los permisos esperados en esta fase permiten consultar a ambos perfiles y crear o actualizar solo al editor. El listado responde 403 con token válido hasta completar la autorización de su Request; esta parte corresponde al primer requerimiento. Si fallan el login, el detalle o los permisos de las operaciones de escritura base, informa al evaluador antes de comenzar.
 
 ## Estructura que puedes consultar y reutilizar
 
@@ -170,7 +170,7 @@ Criterios de aceptación:
 
 ## Alcance y entrega de esta fase
 
-La funcionalidad suministrada comprende los seis endpoints base, la autenticación, la autorización general, los modelos y el recurso JSON. Las únicas funcionalidades pendientes son el filtro del listado y la ruta específica de actualización de prioridad.
+La funcionalidad suministrada comprende las seis operaciones base, la autenticación, la Policy, los modelos y el recurso JSON. El trabajo pendiente se limita a los dos requerimientos: completar la autorización y validación de sus Request, el filtro del listado y el método y la ruta de actualización exclusiva de prioridad.
 
 No necesitas instalar Laravel, dependencias ni Sanctum; implementar autenticación; crear controladores base desde cero; reconstruir el CRUD; modificar el diseño visual de Livewire; crear documentación Swagger; implementar funcionalidades adicionales; ni escribir pruebas automatizadas.
 

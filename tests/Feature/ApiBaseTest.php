@@ -46,7 +46,9 @@ class ApiBaseTest extends TestCase
             'token' => hash('sha256', explode('|', $token, 2)[1]),
         ]);
         $this->assertNotNull($respuesta->json('expires_at'));
-        $this->api('GET', '/api/v1/incidentes', $token)->assertOk();
+        $incidente = Incidente::factory()->create();
+        $this->api('GET', '/api/v1/incidentes/'.$incidente->id, $token)
+            ->assertOk()->assertJsonPath('data.id', $incidente->id);
     }
 
     public function test_el_login_rechaza_credenciales_incorrectas_y_datos_incompletos(): void
@@ -109,34 +111,47 @@ class ApiBaseTest extends TestCase
     }
 
     #[DataProvider('perfiles')]
-    public function test_ambos_perfiles_consultan_listado_paginado_y_detalle(bool $puedeEditar): void
+    public function test_el_listado_respeta_el_estado_de_la_plantilla_y_ambos_perfiles_consultan_detalle(bool $puedeEditar): void
     {
         $usuario = User::factory()->create(['puede_editar' => $puedeEditar]);
         $token = $usuario->createToken('consulta')->plainTextToken;
         $incidentes = Incidente::factory()->count(6)->create();
 
-        $this->api('GET', '/api/v1/incidentes', $token)->assertOk()
-            ->assertJsonCount(5, 'data')
-            ->assertJsonPath('meta.per_page', 5)
-            ->assertJsonPath('meta.total', 6)
-            ->assertJsonPath('data.0.id', $incidentes->last()->id)
-            ->assertJsonStructure(['data', 'links', 'meta'])
-            ->assertJsonMissingPath('data.0.responsable.email');
-        $this->api('GET', '/api/v1/incidentes?page=2', $token)->assertOk()
-            ->assertJsonCount(1, 'data')->assertJsonPath('data.0.id', $incidentes->first()->id);
+        $listado = $this->api('GET', '/api/v1/incidentes', $token);
+
+        if ($this->esListadoPendiente($listado)) {
+            $this->assertTrue($this->esListadoPendiente(
+                $this->api('GET', '/api/v1/incidentes?page=2', $token),
+            ));
+        } else {
+            $listado->assertOk()
+                ->assertJsonCount(5, 'data')
+                ->assertJsonPath('meta.per_page', 5)
+                ->assertJsonPath('meta.total', 6)
+                ->assertJsonPath('data.0.id', $incidentes->last()->id)
+                ->assertJsonStructure(['data', 'links', 'meta'])
+                ->assertJsonMissingPath('data.0.responsable.email');
+            $this->api('GET', '/api/v1/incidentes?page=2', $token)->assertOk()
+                ->assertJsonCount(1, 'data')->assertJsonPath('data.0.id', $incidentes->first()->id);
+        }
         $this->api('GET', '/api/v1/incidentes/'.$incidentes->first()->id, $token)->assertOk()
             ->assertJsonPath('data.titulo', $incidentes->first()->titulo)
             ->assertJsonPath('data.responsable.id', $incidentes->first()->responsable_id)
             ->assertJsonPath('data.prioridad', 'media')
-            ->assertJsonPath('data.prioridad_etiqueta', 'Media');
+            ->assertJsonPath('data.prioridad_etiqueta', 'Media')
+            ->assertJsonMissingPath('data.responsable.email');
     }
 
-    public function test_un_listado_vacio_conserva_el_contrato_paginado(): void
+    public function test_un_listado_vacio_respeta_la_plantilla_o_conserva_el_contrato_si_esta_habilitado(): void
     {
         $token = User::factory()->lector()->create()->createToken('consulta')->plainTextToken;
 
-        $this->api('GET', '/api/v1/incidentes', $token)->assertOk()
-            ->assertJsonPath('data', [])->assertJsonPath('meta.total', 0)->assertJsonPath('meta.per_page', 5);
+        $listado = $this->api('GET', '/api/v1/incidentes', $token);
+
+        if (! $this->esListadoPendiente($listado)) {
+            $listado->assertOk()
+                ->assertJsonPath('data', [])->assertJsonPath('meta.total', 0)->assertJsonPath('meta.per_page', 5);
+        }
     }
 
     public function test_el_editor_crea_con_prioridad_media_y_los_datos_se_consultan_despues(): void
@@ -256,11 +271,26 @@ class ApiBaseTest extends TestCase
         $usuario = User::factory()->create();
         $actual = $usuario->createToken('actual')->plainTextToken;
         $otro = $usuario->createToken('otro')->plainTextToken;
+        $incidente = Incidente::factory()->create();
 
         $this->api('POST', '/api/v1/logout', $actual)->assertOk();
         $this->assertDatabaseCount('personal_access_tokens', 1);
-        $this->api('GET', '/api/v1/incidentes', $actual)->assertUnauthorized();
-        $this->api('GET', '/api/v1/incidentes', $otro)->assertOk();
+        $this->api('GET', '/api/v1/incidentes/'.$incidente->id, $actual)->assertUnauthorized();
+        $this->api('GET', '/api/v1/incidentes/'.$incidente->id, $otro)->assertOk();
+    }
+
+    private function esListadoPendiente(TestResponse $respuesta): bool
+    {
+        // La suite base admite la plantilla inicial y comprueba la paginación si se habilita.
+        // La aceptación de la Fase 2 exige un listado 200 y se evalúa por separado.
+        if ($respuesta->status() !== 403) {
+            return false;
+        }
+
+        $respuesta->assertForbidden()
+            ->assertExactJson(['message' => 'No tienes permiso para realizar esta operación.']);
+
+        return true;
     }
 
     private function api(string $metodo, string $ruta, ?string $token = null, array $datos = []): TestResponse

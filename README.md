@@ -100,10 +100,14 @@ La Fase 1 mantiene sus 35 minutos y sus ejercicios pendientes. Después comienza
 
 La API base ya contiene login, logout, listado, detalle, creación y actualización parcial. Su contrato está en [docs/API_BASE.md](docs/API_BASE.md) y las solicitudes de ejemplo en [la colección Postman](docs/Mesa_Incidentes.postman_collection.json). El filtro por prioridad y el endpoint específico de prioridad permanecen pendientes para el aspirante.
 
+El listado ya recibe `ListarIncidentesRequest`, cuya autorización devuelve `false` inicialmente: responde 403 con token válido para ambos perfiles hasta que el aspirante la complete como parte del primer requerimiento. El método `actualizarPrioridad()` y su Request se entregan como plantillas pendientes; la nueva ruta todavía no está registrada y responde 404 inicialmente.
+
 La instalación inicial aplica también la migración de tokens de Sanctum. Para una base ya preparada se aplica únicamente esa migración, después de verificar el destino, siguiendo las instrucciones privadas del operador. No se debe reinicializar una base con trabajo del aspirante.
 
-Antes de iniciar la segunda fase, el operador comprueba que el editor puede escribir y el lector solo consultar, que las cuentas pueden obtener tokens y que existe la tabla de tokens. La preparación entre fases se realiza con el procedimiento del operador guardado fuera de esta carpeta. No se ejecuta `migrate:fresh`, no se vuelve a ejecutar el seeder y no se cambian archivos del aspirante durante esa transición.
+Antes de iniciar la segunda fase, el operador comprueba que ambas cuentas pueden obtener tokens y consultar el detalle de un incidente, que solo el editor puede escribir mediante las operaciones base y que existe la tabla de tokens. El 403 inicial del listado es intencional y forma parte del trabajo del aspirante. La preparación entre fases se realiza con el procedimiento del operador guardado fuera de esta carpeta. No se ejecuta `migrate:fresh`, no se vuelve a ejecutar el seeder y no se cambian archivos del aspirante durante esa transición.
 
 La autorización es la misma para Livewire y API: depende de `IncidentePolicy` y de la cuenta persistida. La API utiliza exclusivamente tokens Bearer de Sanctum, con vencimiento de dos horas; la sesión web se conserva independiente.
 
 `tests/Feature/ApiBaseTest.php` verifica la infraestructura suministrada. Las nueve pruebas anteriores y estas regresiones se ejecutan con `php artisan test`. La configuración utiliza las credenciales de `.env.testing`; no fuerza un usuario administrativo. La comprobación de entorno y base efectiva se realiza antes de que `RefreshDatabase` pueda migrar. Estas pruebas no constituyen un requisito adicional para el aspirante en la Fase 2.
+
+Las pruebas de login y revocación comprueban el token mediante el detalle, que ya está disponible. Para el listado, la suite base admite el 403 JSON de la plantilla inicial; si se habilita, exige el contrato paginado suministrado. Que esta suite pase acredita la infraestructura comprobada, pero la aceptación de la Fase 2 requiere verificar por HTTP los dos requerimientos, incluido el listado con respuesta 200.

@@ -2,7 +2,7 @@
   "info": {
     "name": "Mesa de Incidentes - API base y Fase 2",
     "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
-    "description": "Infraestructura suministrada y solicitudes de las dos ampliaciones pendientes. base_url es el origen, sin /api/v1. Los logins sustituyen token. Credenciales ficticias exclusivas de evaluación."
+    "description": "API base y solicitudes de los dos requerimientos pendientes. Estado inicial: el listado responde 403 con token válido hasta completar la autorización de ListarIncidentesRequest; el filtro aún no está implementado. El método actualizarPrioridad existe vacío y su ruta todavía no está registrada, por lo que la solicitud específica responde 404 inicialmente. Completar las plantillas forma parte de la Fase 2. base_url es el origen, sin /api/v1. Los logins sustituyen token. Credenciales ficticias exclusivas de evaluación."
   },
   "auth": {
     "type": "bearer",
@@ -39,6 +39,7 @@
   "item": [
     {
       "name": "API base suministrada",
+      "description": "Las operaciones base están preparadas. Excepción intencional: el listado usa ListarIncidentesRequest con authorize() en false y devuelve 403 con token válido hasta que el aspirante complete esa autorización. El operador comprueba el login, el detalle y los permisos de escritura de las operaciones base antes de comenzar.",
       "item": [
         {
           "name": "Login editor",
@@ -137,7 +138,7 @@
               }
             ],
             "url": "{{base_url}}/api/v1/incidentes?page=1",
-            "description": ""
+            "description": "Estado inicial: responde 403 con token válido, tanto para editor como para lector, porque ListarIncidentesRequest::authorize() devuelve false. Completar esa autorización forma parte del requerimiento 1. Después debe responder 200 con hasta cinco incidentes por página y conservar data, links y meta. Sin token válido responde 401."
           }
         },
         {
@@ -252,6 +253,7 @@
     },
     {
       "name": "Ampliaciones pendientes del aspirante",
+      "description": "Solicitudes para comprobar el resultado de la Fase 2. Los Request tienen authorize() en false y rules() vacío; el método actualizarPrioridad también está vacío y su ruta está pendiente. Las respuestas de éxito descritas corresponden al trabajo completado.",
       "item": [
         {
           "name": "Pendiente 1 - Filtro por prioridad",
@@ -264,7 +266,7 @@
               }
             ],
             "url": "{{base_url}}/api/v1/incidentes?prioridad=alta&page=1",
-            "description": "Ejercicio del aspirante: en la base suministrada este parámetro aún no filtra. Tras implementarlo debe devolver solo prioridad alta con paginación; valores inválidos deben responder 422."
+            "description": "Estado inicial: responde 403 con token válido porque la autorización de ListarIncidentesRequest está pendiente, y el filtro todavía no está implementado. El aspirante debe completar la autorización, la validación y el filtro. Al finalizar: editor y lector reciben 200 con solo prioridad alta, aplicada antes de paginar; los valores inválidos responden 422 y la ausencia de token válido responde 401."
           }
         },
         {
@@ -282,7 +284,7 @@
               }
             ],
             "url": "{{base_url}}/api/v1/incidentes/{{incidente_id}}/prioridad",
-            "description": "Ejercicio del aspirante: esta ruta no está registrada inicialmente. Tras implementarla: editor 200, lector 403, sin token 401, prioridad inválida 422 y recurso inexistente 404.",
+            "description": "Estado inicial: esta ruta no está registrada y responde 404. El controlador ya contiene actualizarPrioridad vacío con ActualizarPrioridadIncidenteRequest, cuya autorización y reglas también están pendientes. El aspirante debe completar el Request, el método y registrar la ruta protegida. Al finalizar: editor 200, lector 403, sin token 401, prioridad inválida 422 y recurso inexistente 404. Los campos adicionales no deben modificar otros atributos.",
             "body": {
               "mode": "raw",
               "raw": "{\n  \"prioridad\": \"alta\"\n}",

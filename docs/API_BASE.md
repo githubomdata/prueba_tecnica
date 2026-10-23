@@ -1,6 +1,13 @@
 # API base de Mesa de Incidentes
 
-La API suministrada permite autenticarse, consultar, crear y editar incidentes. Este documento describe el contrato inicial de la Fase 2. El filtrado por prioridad y el endpoint específico para actualizarla son los dos ejercicios pendientes definidos en `ENUNCIADO.md`.
+La API suministrada contiene las operaciones base para autenticarse, consultar, crear y editar incidentes. Este documento distingue el estado inicial de las plantillas del comportamiento esperado al completar los dos requerimientos de la Fase 2 definidos en `ENUNCIADO.md`.
+
+## Estado inicial de las plantillas
+
+- `ListarIncidentesRequest` ya es un parámetro de `IncidenteController::index()`, pero su autorización y sus reglas están pendientes. Como `authorize()` devuelve `false`, `GET /incidentes` responde **403 con un token válido**, tanto para el editor como para el lector, con o sin `prioridad`. Completar esa plantilla y el filtro forma parte del primer requerimiento. Sin un token válido, la ruta protegida responde 401.
+- `ActualizarPrioridadIncidenteRequest` también tiene autorización y reglas pendientes. El método `IncidenteController::actualizarPrioridad()` se entrega vacío y su ruta todavía no está registrada: `PATCH /incidentes/{id}/prioridad` responde **404 inicialmente**. Completar el Request, el método y la ruta forma parte del segundo requerimiento.
+
+El 403 inicial del listado es intencional y corresponde al trabajo del aspirante. El operador comprueba el login, el detalle y los permisos de escritura de las operaciones base antes de comenzar la fase. Las URL de esta sección son relativas a `/api/v1`.
 
 ## URL y cabeceras
 
@@ -8,18 +15,18 @@ Con `php artisan serve`, la URL base es `http://127.0.0.1:8000/api/v1`. Si se ut
 
 Envía `Accept: application/json` y, cuando haya cuerpo JSON, `Content-Type: application/json`. Los endpoints protegidos requieren `Authorization: Bearer {token}`. La sesión web no sustituye el token y el logout de API revoca únicamente el token utilizado.
 
-## Endpoints disponibles
+## Endpoints base y estado de entrega
 
-| Método | Ruta relativa a la URL base | Acceso | Éxito |
-|---|---|---|---|
-| POST | `/login` | Credenciales locales | 200 |
-| POST | `/logout` | Token válido | 200 |
-| GET | `/incidentes` | Editor y lector | 200 |
-| GET | `/incidentes/{id}` | Editor y lector | 200 |
-| POST | `/incidentes` | Editor | 201 |
-| PATCH | `/incidentes/{id}` | Editor | 200 |
+| Método | Ruta relativa a la URL base | Acceso esperado | Éxito esperado | Estado de entrega |
+|---|---|---|---|---|
+| POST | `/login` | Credenciales locales | 200 | Disponible |
+| POST | `/logout` | Token válido | 200 | Disponible |
+| GET | `/incidentes` | Editor y lector | 200 | 403 con token válido hasta completar la autorización del Request |
+| GET | `/incidentes/{id}` | Editor y lector | 200 | Disponible |
+| POST | `/incidentes` | Editor | 201 | Disponible |
+| PATCH | `/incidentes/{id}` | Editor | 200 | Disponible |
 
-Los perfiles de esta tabla corresponden al entorno preparado para la Fase 2. El operador realiza esa comprobación antes de comenzar; no es un tercer ejercicio del aspirante.
+Los perfiles de esta tabla corresponden a los permisos persistidos que el operador comprueba antes de comenzar. En el listado, esos perfiles podrán consultar al completar su autorización como parte del primer requerimiento.
 
 ## Login y logout
 
@@ -55,6 +62,8 @@ Accept: application/json
 Respuesta 200: `{"message":"Sesión de API cerrada."}`. Ese token deja de autenticar y los demás tokens de la cuenta siguen vigentes hasta su revocación o vencimiento.
 
 ## Listado y detalle
+
+La siguiente solicitud de listado responde 403 con token válido mientras la autorización de `ListarIncidentesRequest` esté pendiente. El comportamiento de colección descrito a continuación es el esperado al completarla; la validación del filtro y su aplicación también corresponden al primer requerimiento.
 
 ```http
 GET /api/v1/incidentes?page=1
@@ -132,7 +141,7 @@ La actualización devuelve 200 con el recurso actualizado.
 | Código | Significado |
 |---|---|
 | 401 | Token ausente, inválido, revocado o expirado; también credenciales incorrectas en login |
-| 403 | La cuenta autenticada carece del permiso requerido |
+| 403 | La solicitud autenticada no supera la autorización; en el listado inicial también ocurre porque `authorize()` está pendiente |
 | 404 | Recurso o ruta inexistente |
 | 405 | Método HTTP no disponible en esa ruta |
 | 422 | Error de validación |
